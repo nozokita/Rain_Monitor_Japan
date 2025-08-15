@@ -1,0 +1,81 @@
+{
+  "locations": [
+    {
+      "name": "三島駅",
+      "lat": 35.126474871810345,
+      "lon": 138.91109391000256,
+      "email_to": "mishima-alert@example.com",
+      "thresholds": {
+        "heavy_rain": 30,
+        "torrential_rain": 50
+      },
+      "enabled": true
+    },
+    {
+      "name": "名古屋駅",
+      "lat": 35.170915,
+      "lon": 136.881537,
+      "email_to": "nagoya-team@example.com, nagoya-manager@example.com",
+      "thresholds": {
+        "heavy_rain": 25,
+        "torrential_rain": 45
+      },
+      "enabled": true
+    },
+    {
+      "name": "静岡駅",
+      "lat": 34.971698,
+      "lon": 138.388851,
+      "email_to": "shizuoka-weather@example.com",
+      "thresholds": null,
+      "enabled": true
+    },
+    {
+      "name": "浜松駅",
+      "lat": 34.703892,
+      "lon": 137.734404,
+      "email_to": "",
+      "thresholds": {
+        "heavy_rain": 35,
+        "torrential_rain": 55
+      },
+      "enabled": true
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "interval_minutes": 5
+  },
+  "thresholds": {
+    "heavy_rain": 30,
+    "torrential_rain": 50
+  },
+  "notification": {
+    "enabled": true,
+    "admin_email": "admin@example.com",
+    "admin_notification_times": [
+      "09:00",
+      "17:00"
+    ],
+    "cooldown_minutes": 30,
+    "outlook": {
+      "enabled": true,
+      "importance": "Normal"
+    }
+  },
+  "storage": {
+    "sqlite_path": "data/nowcast.sqlite",
+    "retention_days": 3
+  },
+  "log": {
+    "suppress_warn": true
+  },
+  "leads": [
+    0,
+    15,
+    30,
+    45,
+    60
+  ],
+  "debug": false
+}
