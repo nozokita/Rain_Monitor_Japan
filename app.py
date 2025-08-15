@@ -2,10 +2,36 @@
 # -*- coding: utf-8 -*-
 """
 app.py — シンプル＆クリーンなダッシュボード v3
+
+機能概要:
 - 日本時間（JST）で統一表示
 - わかりやすい日本語表記
 - ズーム可能な雨雲レーダー
 - シンプルな降水量カードデザイン
+
+システム構成:
+1. データ管理
+   - SQLiteデータベースを使用して降水予測データを保存
+   - 通知履歴の記録と管理
+   - 設定ファイル（config.json）による柔軟な設定管理
+
+2. UI機能
+   - インタラクティブな雨雲レーダー（Leaflet.js使用）
+   - リアルタイム降水量表示カード
+   - 地点管理インターフェース
+   - 通知設定パネル
+   - システム管理ダッシュボード
+
+3. 監視機能
+   - 複数地点の同時監視
+   - 地点別の閾値設定
+   - カスタマイズ可能な通知設定
+   - システム稼働状態の可視化
+
+使用方法:
+1. config.jsonで基本設定を行う
+2. monitor.pyを起動してデータ収集を開始
+3. このアプリ（app.py）でダッシュボードを表示
 """
 
 from __future__ import annotations
@@ -47,15 +73,37 @@ DEFAULTS = {
 }
 
 # ---------- 設定管理 ----------
+"""
+設定ファイル（config.json）の管理機能
+
+主な機能:
+1. 設定ファイルの読み込みと既定値のマージ
+2. 階層的な設定の深いマージ（deep merge）
+3. 設定の永続化
+
+設定項目:
+- locations: 監視地点の設定（名前、座標、メール通知先など）
+- monitoring: 監視の有効/無効、収集間隔
+- thresholds: 降水量の閾値（強い雨、激しい雨）
+- notification: メール通知の設定
+- storage: データベース設定
+- log: ログ設定
+"""
 def load_config() -> Dict[str, Any]:
+    """
+    設定ファイルを読み込み、既定値とマージする
+    
+    Returns:
+        Dict[str, Any]: マージされた設定辞書
+    """
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
                 cfg = json.load(f)
         except Exception:
-            cfg = {}
+            cfg = {}  # 読み込みエラー時は空の設定で初期化
     else:
-        cfg = {}
+        cfg = {}  # 設定ファイルが存在しない場合は空の設定で初期化
     
     def deep_merge(a, b):
         for k, v in b.items():
@@ -74,10 +122,38 @@ def save_config(cfg: Dict[str, Any]) -> None:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
 
 # ---------- データベース ----------
+"""
+SQLiteデータベースの管理機能
+
+テーブル構成:
+1. nowcast: 降水予測データ
+   - 地点情報（名前、座標）
+   - 予測時刻情報（基準時刻、有効時刻）
+   - 予測値（降水量）
+
+2. notification_history: 通知履歴
+   - 通知情報（種類、送信先、件名、本文）
+   - 閾値情報（降水量、閾値種別）
+   - タイムスタンプ
+"""
 def connect_db(path: str) -> sqlite3.Connection:
+    """
+    データベースに接続し、必要なテーブルを初期化する
+    
+    Args:
+        path: データベースファイルのパス
+        
+    Returns:
+        sqlite3.Connection: データベース接続オブジェクト
+        
+    Note:
+        - 自動的にデータベースディレクトリを作成
+        - Row型のファクトリを設定（カラム名でアクセス可能）
+        - マルチスレッド対応の設定
+    """
     os.makedirs(os.path.dirname(path), exist_ok=True) if os.path.dirname(path) else None
     conn = sqlite3.connect(path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
+    conn.row_factory = sqlite3.Row  # カラム名でアクセス可能に
     
     # テーブル作成
     conn.execute("""
@@ -164,10 +240,39 @@ def read_heartbeat() -> Dict[str, Any]:
         return {}
 
 # ---------- シンプルなスタイル ----------
+"""
+UIコンポーネントのスタイル定義
+
+スタイル構成:
+1. 基本設定
+   - フォント: システムフォントを優先使用
+   - レスポンシブデザイン対応
+   - 一貫性のある色使い
+
+2. コンポーネント
+   - ヘッダー: グラデーション背景とステータス表示
+   - 降水量カード: 状態に応じた色分け表示
+   - 地点セクション: 整理された情報レイアウト
+   - テーブル: 見やすい罫線とパディング
+   - バッジ: 状態を示すラベル表示
+
+3. インタラクション
+   - ホバーエフェクト
+   - アニメーション効果
+   - フォーカス状態の視覚的フィードバック
+"""
 def inject_simple_css():
+    """
+    Streamlitアプリにカスタムスタイルを注入する
+    
+    スタイルの特徴:
+    - モダンでクリーンなデザイン
+    - 直感的な色による状態表現
+    - アクセシビリティに配慮した要素設計
+    """
     st.markdown("""
     <style>
-    /* フォント設定 */
+    /* フォント設定 - システムフォントを優先使用 */
     html, body, [class*="css"] {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
     }
