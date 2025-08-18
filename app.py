@@ -43,6 +43,14 @@ import streamlit as st
 import streamlit.components.v1 as components
 from textwrap import dedent
 
+# 重要: st.set_page_config() は最初のStreamlitコマンドでなければならない
+st.set_page_config(
+    page_title="降水監視システム",
+    page_icon="🌧️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 JST = timezone(timedelta(hours=9))
 CONFIG_PATH = os.environ.get("NOWCAST_CONFIG", "config.json")
 
@@ -453,12 +461,6 @@ def inject_simple_css():
     """, unsafe_allow_html=True)
 
 # ---------- メインUI ----------
-st.set_page_config(
-    page_title="降水監視システム",
-    page_icon="🌧️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 # スタイル適用（戻り値を変数に格納して表示を防ぐ）
 _ = inject_simple_css()
